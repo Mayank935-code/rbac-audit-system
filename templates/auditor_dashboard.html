@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RBAC Auditor Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #f7f9fc;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      min-height: 100vh;
+    }
+    .sidebar {
+      width: 250px;
+      background-color: #1f2937;
+      color: white;
+      padding: 2rem 1rem;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .sidebar h4 {
+      font-weight: bold;
+      color: #f97316;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      margin: 0.75rem 0;
+      padding: 0.6rem 1rem;
+      display: block;
+      border-radius: 10px;
+      transition: background 0.3s ease;
+      font-weight: 500;
+    }
+    .sidebar a:hover, .sidebar a.active {
+      background-color: #f97316;
+      color: #fff;
+    }
+    .main-content {
+      margin-left: 250px;
+      padding: 2rem;
+      flex-grow: 1;
+      width: calc(100% - 250px);
+    }
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      color: #1f2937;
+    }
+    .data-table th {
+      background-color: #f3f4f6;
+      color: #111827;
+      font-weight: 600;
+    }
+    .data-table td {
+      color: #374151;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h4>Auditor Panel</h4>
+    <a href="#" class="active" onclick="showSection('audit')">Audit Logs</a>
+    <a href="#" onclick="showSection('employees')">Employees</a>
+    <a href="#" onclick="showSection('access')">Access Requests</a>
+    <a href="#" onclick="showSection('signup')">Signup Requests</a>
+    <a href="#" onclick="showSection('profile')">My Profile</a>
+    <a href="#" onclick="confirmLogout()">Logout</a>
+    <script>
+      function confirmLogout() {
+        if (confirm("Are you sure you want to logout?")) {
+          window.location.href = "/login";
+        }
+      }
+    </script>
+  </div>
+
+  <div class="main-content">
+    <div id="audit-section" class="content-section">
+      <div class="section-title">📋 Audit Logs</div>
+      <table class="table table-bordered data-table">
+        <thead>
+          <tr>
+            <th>Log ID</th>
+            <!-- <th>User ID</th> -->
+            <th>Action</th>
+            <th>Table</th>
+            <th>Target ID</th>
+            <th>Old Value</th>
+            <th>New Value</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in audit_logs %}
+            <tr>
+              <td>{{ log.log_id }}</td>
+              <!-- <td>{{ log.emp_id }}</td> -->
+              <td>{{ log.action }}</td>
+              <td>{{ log.table_name }}</td>
+              <td>{{ log.target_id }}</td>
+              <td>{{ log.old_value }}</td>
+              <td>{{ log.new_value }}</td>
+              <td>{{ log.timestamp }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div id="employees-section" class="content-section hidden">
+      <div class="section-title">👥 Employees Overview</div>
+      <table class="table table-bordered data-table">
+        <thead>
+          <tr>
+            <th>Emp ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>DOJ</th>
+            <th>Salary</th>
+            <th>Department</th>
+            <th>Role</th>
+            <th>Username</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for emp in employees %}
+            <tr>
+              <td>{{ emp.emp_id }}</td>
+              <td>{{ emp.name }}</td>
+              <td>{{ emp.email }}</td>
+              <td>{{ emp.doj }}</td>
+              <td>{{ emp.salary }}</td>
+              <td>{{ emp.dept_name }}</td>
+              <td>{{ emp.role_name }}</td>
+              <td>{{ emp.username }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div id="access-section" class="content-section hidden">
+      <div class="section-title">🔓 Access Requests</div>
+      <table class="table table-bordered data-table">
+        <thead>
+          <tr>
+            <th>Request ID</th>
+            <th>Username</th>
+            <th>Target Table</th>
+            <th>Target ID</th>
+            <th>Action</th>
+            <th>Reason</th>
+            <th>Status</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for req in access_requests %}
+            <tr>
+              <td>{{ req.request_id }}</td>
+              <td>{{ req.username }}</td>
+              <td>{{ req.target_table }}</td>
+              <td>{{ req.target_id or "-" }}</td>
+              <td>{{ req.action_attempted }}</td>
+              <td>{{ req.reason }}</td>
+              <td>{{ req.status }}</td>
+              <td>{{ req.timestamp }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div id="signup-section" class="content-section hidden">
+      <div class="section-title">📨 Signup Requests</div>
+      <table class="table table-bordered data-table">
+        <thead>
+          <tr>
+            <th>Request ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Dept ID</th>
+            <th>DOJ</th>
+            <th>Salary</th>
+            <th>Status</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for sreq in signup_requests %}
+            <tr>
+              <td>{{ sreq.request_id }}</td>
+              <td>{{ sreq.name }}</td>
+              <td>{{ sreq.email }}</td>
+              <td>{{ sreq.role }}</td>
+              <td>{{ sreq.dept_id }}</td>
+              <td>{{ sreq.doj }}</td>
+              <td>{{ sreq.salary }}</td>
+              <td>{{ sreq.status }}</td>
+              <td>{{ sreq.timestamp }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div id="profile-section" class="content-section hidden">
+      <div class="section-title">🙍 Auditor Profile</div>
+      <div class="card shadow-sm p-4 mb-5">
+        <div class="row g-4">
+          <div class="col-md-3">
+            <label class="form-label"><b>Employee ID</b></label>
+            <input type="text" class="form-control bg-light" value="{{ profile.emp_id }}" disabled>
+          </div>
+          <div class="col-md-5">
+            <label class="form-label"><b>Full Name</b></label>
+            <input type="text" class="form-control bg-light" value="{{ profile.name }}" disabled>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label"><b>Username</b></label>
+            <input type="text" class="form-control bg-light" value="{{ profile.username }}" disabled>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label"><b>Email</b></label>
+            <input type="email" class="form-control bg-light" value="{{ profile.email }}" disabled>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label"><b>Department</b></label>
+            <input type="text" class="form-control bg-light" value="{{ profile.dept_name }}" disabled>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label"><b>Role</b></label>
+            <input type="text" class="form-control bg-light" value="{{ profile.role_name }}" disabled>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label"><b>Date of Joining</b></label>
+            <input type="date" class="form-control bg-light" value="{{ profile.doj }}" disabled>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label"><b>Salary (₹)</b></label>
+            <input type="number" class="form-control bg-light" value="{{ profile.salary }}" disabled>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function showSection(section) {
+      const sections = ['audit', 'employees', 'access', 'signup', 'profile'];
+      sections.forEach(s => document.getElementById(`${s}-section`).classList.add('hidden'));
+      document.getElementById(`${section}-section`).classList.remove('hidden');
+      document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+      document.querySelector(`.sidebar a[onclick*="${section}"]`).classList.add('active');
+    }
+  </script>
+</body>
+</html>

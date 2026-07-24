@@ -1,0 +1,30 @@
+RBAC Audit System — Demo Login Credentials
+=============================================
+
+All accounts below use the same demo password for simplicity.
+
+Username                               Password     Role
+-----------------------------------------------------------------
+aditya_admin_humanresources_1          Demo@123     Admin
+kavya_admin_engineering_2              Demo@123     Admin
+devansh_admin_finance_3                Demo@123     Admin
+meera_admin_marketing_4                Demo@123     Admin
+arjun_admin_legal_5                    Demo@123     Admin
+riya_admin_itinfrastructure_6          Demo@123     Admin
+karan_admin_sales_7                    Demo@123     Admin
+simran_admin_customersupport_8         Demo@123     Admin
+nikhil_admin_productmanagement_9       Demo@123     Admin
+priya_admin_operations_10              Demo@123     Admin
+rohan_hr_productmanagement_11          Demo@123     HR
+ananya_manager_itinfrastructure_13     Demo@123     Manager
+yash_intern_itinfrastructure_14        Demo@123     Intern
+kabir_hr_itinfrastructure_15           Demo@123     HR
+diya_auditor_itinfrastructure_16       Demo@123     Auditor
+sana_manager_productmanagement_19      Demo@123     Manager
+neha_hr_operations_20                  Demo@123     HR
+
+Tip: try 'ananya_manager_itinfrastructure_13' (Manager) or
+'yash_intern_itinfrastructure_14' (Intern) to see role-based views differ.
+
+Note: this is demo/seed data for reviewers. Do not reuse these
+credentials or this password pattern in any real system.

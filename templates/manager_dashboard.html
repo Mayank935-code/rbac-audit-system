@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RBAC Manager Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #f7f9fc;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .wrapper {
+      display: flex;
+      min-height: 100vh;
+    }
+    .sidebar {
+      width: 250px;
+      background-color: #1f2937;
+      color: white;
+      padding: 2rem 1rem;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+    }
+    .sidebar h4 {
+      font-weight: bold;
+      color: #f97316;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      margin: 0.75rem 0;
+      padding: 0.6rem 1rem;
+      display: block;
+      border-radius: 10px;
+      transition: background 0.3s ease;
+      font-weight: 500;
+    }
+    .sidebar a:hover, .sidebar a.active {
+      background-color: #f97316;
+      color: #fff;
+    }
+    .main-content {
+      margin-left: 250px;
+      padding: 2rem;
+      width: calc(100% - 250px);
+    }
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      color: #1f2937;
+    }
+    .data-table th {
+      background-color: #f3f4f6;
+      color: #111827;
+      font-weight: 600;
+    }
+    .data-table td {
+      color: #374151;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="sidebar">
+      <h4>Manager Panel</h4>
+      <a href="#" class="active" onclick="showSection('team')">Team View</a>
+      <a href="#" onclick="showSection('salary')">Recommend Salary</a>
+      <a href="#" onclick="showSection('profile')">My Profile</a>
+      <a href="#" onclick="confirmLogout()">Logout</a>
+      <script>
+        function confirmLogout() {
+          if (confirm("Are you sure you want to logout?")) {
+            window.location.href = "/login";
+          }
+        }
+      </script>
+    </div>
+
+    <div class="main-content">
+      <!-- {% if request.args.get('success') == 'true' %}
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        ✅ Salary recommendation submitted successfully!
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+      {% endif %} -->
+
+      <div id="team-section" class="content-section">
+        <div class="section-title">👥 My Team</div>
+          <table class="table table-bordered">
+            <thead>
+              <tr><th>Emp ID</th><th>Username</th><th>Name</th><th>Email</th><th>Role</th><th>DOJ</th><th>Salary</th></tr>
+            </thead>
+            <tbody>
+              {% for member in team_members %}
+              <tr>
+                <td>{{ member.emp_id }}</td>
+                <td>{{ member.username }}</td>
+                <td>{{ member.name }}</td>
+                <td>{{ member.email }}</td>
+                <td>{{ member.role_name }}</td>
+                <td>{{ member.doj }}</td>
+                <td>₹{{ member.salary }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+      </div>
+
+      <div id="salary-section" class="content-section hidden">
+        <div class="section-title mt-5">💡 Recommend Salary Update</div>
+          <form method="POST" action="/hr/receive_salary_recommendation">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label">Select Team Member</label>
+                <select class="form-select" name="emp_id" required>
+                  <option disabled selected value="">Choose...</option>
+                  {% for member in team_members %}
+                  <option value="{{ member.emp_id }}">{{ member.username }} ({{ member.role_name }})</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Proposed Salary</label>
+                <input type="number" class="form-control" name="proposed_salary" required>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Select Target HR</label>
+                <select class="form-select" name="hr_user_id" required>
+                  <option disabled selected value="">Choose HR...</option>
+                  {% for hr in available_hrs %}
+                  <option value="{{ hr.user_id }}">{{ hr.username }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label">Reason</label>
+                <textarea class="form-control" name="reason" rows="3" required></textarea>
+              </div>
+
+              <div class="col-12">
+                <button type="submit" class="btn btn-success">Submit Recommendation</button>
+              </div>
+            </div>
+          </form>
+      </div>
+
+      <div id="profile-section" class="content-section hidden">
+        <div class="section-title">🙍 Manager Profile</div>
+        <div class="card shadow-sm p-4" style="width: 100%; border: 1px solid #e5e7eb; border-radius: 12px;">
+        <div class="row g-4">
+          <div class="col-md-3">
+            <label class="form-label"><b>Employee ID</b></label>
+            <input type="text" class="form-control bg-light" value="{{ profile.emp_id }}" disabled>
+          </div>
+          <div class="col-md-5">
+            <label class="form-label"><b>Full Name</b></label>
+            <input type="text" class="form-control bg-light" value="{{ profile.name }}" disabled>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label"><b>Username</b></label>
+            <input type="text" class="form-control bg-light" value="{{ profile.username }}" disabled>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label"><b>Email</b></label>
+            <input type="email" class="form-control bg-light" value="{{ profile.email }}" disabled>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label"><b>Department</b></label>
+            <input type="text" class="form-control bg-light" value="{{ profile.dept_name }}" disabled>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label"><b>Role</b></label>
+            <input type="text" class="form-control bg-light" value="{{ profile.role_name }}" disabled>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label"><b>Date of Joining</b></label>
+            <input type="date" class="form-control bg-light" value="{{ profile.doj }}" disabled>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label"><b>Salary (₹)</b></label>
+            <input type="number" class="form-control bg-light" value="{{ profile.salary }}" disabled>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <script>
+    function showSection(section) {
+      const sections = ['team', 'salary', 'profile'];
+      sections.forEach(s => document.getElementById(`${s}-section`).classList.add('hidden'));
+      document.getElementById(`${section}-section`).classList.remove('hidden');
+      document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+      document.querySelector(`.sidebar a[onclick*="${section}"]`).classList.add('active');
+    }
+    // Check for ?success=true in URL
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("success") === "true") {
+      alert("✅ Salary recommendation submitted successfully!");
+      // Remove the ?success=true from URL without reloading
+      const url = window.location.href.split('?')[0];
+      window.history.replaceState({}, document.title, url);
+    }
+  </script>
+</body>
+</html>

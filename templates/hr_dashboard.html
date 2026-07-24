@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RBAC HR Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #f7f9fc;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      min-height: 100vh;
+    }
+    .sidebar {
+      width: 250px;
+      background-color: #1f2937;
+      color: white;
+      padding: 2rem 1rem;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .sidebar h4 {
+      font-weight: bold;
+      color: #f97316;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      margin: 0.75rem 0;
+      padding: 0.6rem 1rem;
+      display: block;
+      border-radius: 10px;
+      transition: background 0.3s ease;
+      font-weight: 500;
+    }
+    .sidebar a:hover, .sidebar a.active {
+      background-color: #f97316;
+      color: #fff;
+    }
+    .main-content {
+      margin-left: 250px;
+      padding: 2rem;
+      flex-grow: 1;
+      width: calc(100% - 250px);
+    }
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      color: #1f2937;
+    }
+    .data-table th {
+      background-color: #f3f4f6;
+      color: #111827;
+      font-weight: 600;
+    }
+    .data-table td {
+      color: #374151;
+    }
+    .hidden {
+      display: none;
+    }
+    .action-icons i {
+      cursor: pointer;
+      margin-right: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h4>HR Panel</h4>
+    <a href="#" class="active" onclick="showSection('employees')">Employees</a>
+    <a href="#" onclick="showSection('requests')">Access Requests</a>
+    <a href="#" onclick="showSection('salary')">Salary Recommendations</a>
+    <a href="#" onclick="showSection('profile')">My Profile</a>
+    <a href="#" onclick="confirmLogout()">Logout</a>
+    <script>
+      function confirmLogout() {
+        if (confirm("Are you sure you want to logout?")) {
+          window.location.href = "/login";
+        }
+      }
+    </script>
+  </div>
+
+  <div class="main-content">
+    <div id="employees-section" class="content-section">
+      <div class="section-title">👥 Employee Directory</div>
+      <table class="table table-bordered data-table">
+        <thead>
+          <tr>
+            <th>Emp ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>DOJ</th>
+            <th>Salary</th>
+            <th>Department</th>
+            <th>Role</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for emp in employees %}
+            <tr>
+              <td>{{ emp.emp_id }}</td>
+              <td>{{ emp.name }}</td>
+              <td>{{ emp.email }}</td>
+              <td>{{ emp.doj }}</td>
+              <td>{{ emp.salary }}</td>
+              <td>{{ emp.dept_name }}</td>
+              <td>{{ emp.role_name }}</td>
+              <td>
+                <span class="text-muted">HR-only view</span>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div id="requests-section" class="content-section hidden">
+      <div class="section-title">🔓 Access Requests</div>
+
+      <ul class="nav nav-tabs mb-3" id="accessTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" data-bs-toggle="tab" data-status="all" type="button">📋 All</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" data-bs-toggle="tab" data-status="pending" type="button">🕒 Pending</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" data-bs-toggle="tab" data-status="approved" type="button">✅ Approved</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" data-bs-toggle="tab" data-status="denied" type="button">❌ Denied</button>
+        </li>
+      </ul>
+
+      <table class="table table-bordered data-table">
+        <thead>
+          <tr>
+            <th>Request ID</th>
+            <th>Username</th>
+            <th>Resource Name</th>
+            <th>Action</th>
+            <th>Reason</th>
+            <th>Status</th>
+            <th>Requested On</th>
+            <th>Decision</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for req in access_requests %}
+          <tr data-status="{{ req.status }}">
+            <td>{{ req.request_id }}</td>
+            <td>{{ req.username }}</td>
+            <td>{{ req.target_table }}</td>
+            <td>{{ req.action_attempted or '-' }}</td>
+            <td>{{ req.reason }}</td>
+            <td>
+              {% if req.status == 'pending' %}
+                <span class="badge bg-warning text-dark">🕒 Pending</span>
+              {% elif req.status == 'approved' %}
+                <span class="badge bg-success">✅ Approved</span>
+              {% elif req.status == 'denied' %}
+                <span class="badge bg-danger">❌ Denied</span>
+              {% endif %}
+            </td>
+            <td>{{ req.timestamp.strftime('%Y-%m-%d %H:%M:%S') if req.timestamp else '' }}</td>
+            <td>
+              {% if req.status == 'pending' %}
+                <form method="POST" action="/hr/handle_access/{{ req.request_id }}">
+                  <div class="d-flex gap-1">
+                    <button type="submit" name="action" value="approve" class="btn btn-success btn-sm">Approve</button>
+                    <button type="submit" name="action" value="deny" class="btn btn-danger btn-sm">Deny</button>
+                  </div>
+                </form>
+              {% else %}
+                —
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div id="salary-section" class="content-section hidden">
+      <div class="section-title">💰 Salary Recommendations</div>
+      <ul class="nav nav-tabs mb-3" id="salaryTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" data-status="all">📋 All</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" data-status="pending">🕒 Pending</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" data-status="approved">✅ Approved</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" data-status="denied">❌ Denied</button>
+        </li>
+      </ul>
+      <table class="table table-bordered data-table">
+        <thead>
+          <tr>
+            <th>Reco ID</th>
+            <th>Emp ID</th>
+            <th>Username</th>
+            <th>Old Salary</th>
+            <th>Proposed Salary</th>
+            <th>Reason</th>
+            <th>Manager</th>
+            <th>Timestamp</th>
+            <th>Status</th>
+            <th>Decision</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for rec in salary_recos %}
+          <tr data-status="{{ rec.status }}">
+            <td>{{ rec.rec_id }}</td>
+            <td>{{ rec.emp_id }}</td>
+            <td>{{ rec.emp_username }}</td>
+            <td>₹{{ rec.old_salary }}</td>
+            <td>₹{{ rec.proposed_salary }}</td>
+            <td>{{ rec.reason }}</td>
+            <td>{{ rec.manager_username }}</td>
+            <td>{{ rec.timestamp }}</td>
+            <td>
+              {% if rec.status == 'pending' %}
+                <span class="badge bg-warning text-dark">🕒 Pending</span>
+              {% elif rec.status == 'approved' %}
+                <span class="badge bg-success">✅ Approved</span>
+              {% elif rec.status == 'denied' %}
+                <span class="badge bg-danger">❌ Denied</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if rec.status == 'pending' %}
+                <form method="POST" action="/hr/handle_salary/{{ rec.rec_id }}">
+                  <div class="d-flex flex-column gap-1">
+                    <button type="submit" name="action" value="approve" class="btn btn-success btn-sm">Approve</button>
+                    <button type="submit" name="action" value="deny" class="btn btn-danger btn-sm">Deny</button>
+                  </div>
+                  
+                </form>
+              {% else %}
+                -
+              {% endif %}
+            </td>
+            
+          </tr>
+          {% endfor %}
+        </tbody>
+
+      </table>
+    </div>
+
+    <div id="profile-section" class="content-section hidden">
+        <div class="section-title">🙍 HR Profile</div>
+        <div class="card shadow-sm p-4" style="width: 100%; border: 1px solid #e5e7eb; border-radius: 12px;">
+        <div class="row g-4">
+          <div class="col-md-3">
+            <label class="form-label"><b>Employee ID</b></label>
+            <input type="text" class="form-control bg-light" value="{{ profile.emp_id }}" disabled>
+          </div>
+          <div class="col-md-5">
+            <label class="form-label"><b>Full Name</b></label>
+            <input type="text" class="form-control bg-light" value="{{ profile.name }}" disabled>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label"><b>Username</b></label>
+            <input type="text" class="form-control bg-light" value="{{ profile.username }}" disabled>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label"><b>Email</b></label>
+            <input type="email" class="form-control bg-light" value="{{ profile.email }}" disabled>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label"><b>Department</b></label>
+            <input type="text" class="form-control bg-light" value="{{ profile.dept_name }}" disabled>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label"><b>Role</b></label>
+            <input type="text" class="form-control bg-light" value="{{ profile.role_name }}" disabled>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label"><b>Date of Joining</b></label>
+            <input type="date" class="form-control bg-light" value="{{ profile.doj }}" disabled>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label"><b>Salary (₹)</b></label>
+            <input type="number" class="form-control bg-light" value="{{ profile.salary }}" disabled>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function showSection(section) {
+      const sections = ['employees', 'requests', 'salary', 'profile'];
+      sections.forEach(s => document.getElementById(`${s}-section`).classList.add('hidden'));
+      document.getElementById(`${section}-section`).classList.remove('hidden');
+      document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+      document.querySelector(`.sidebar a[onclick*="${section}"]`).classList.add('active');
+    }
+
+  // Filtering logic for Access Requests
+  document.addEventListener('DOMContentLoaded', () => {
+    const rows = document.querySelectorAll('#requests-section tbody tr');
+    const tabButtons = document.querySelectorAll('#accessTabs button');
+
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const status = btn.dataset.status;
+        rows.forEach(row => {
+          if (status === 'all' || row.dataset.status === status) {
+            row.style.display = '';
+          } else {
+            row.style.display = 'none';
+          }
+        });
+
+        tabButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    // Trigger default tab
+    tabButtons[0].click();
+  });
+
+  const salaryTabs = document.querySelectorAll('#salaryTabs .nav-link');
+  const salaryRows = document.querySelectorAll('#salary-section tbody tr');
+
+  salaryTabs.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const status = btn.dataset.status;
+      salaryRows.forEach(row => {
+        const rowStatus = row.getAttribute('data-status');
+        if (status === 'all' || rowStatus === status) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+      salaryTabs.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // Load "All" by default
+  window.addEventListener('DOMContentLoaded', () => {
+    salaryTabs[0].click();
+  });
+
+  </script>
+</body>
+</html>
