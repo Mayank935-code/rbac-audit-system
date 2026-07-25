@@ -55,7 +55,7 @@ python app.py
 Visit `http://127.0.0.1:5000`
 
 ## Demo Login
-See [`credentials.txt`](./credentials.txt) for demo usernames/passwords across all 5 roles — try logging in as a Manager or Intern to see role-based views in action.
+See [`demo_login.txt`](./demo_login.txt) for demo usernames/passwords across all 5 roles — try logging in as a Manager or Intern to see role-based views in action.
 
 ## Project Structure
 ```
@@ -70,4 +70,4 @@ See [`credentials.txt`](./credentials.txt) for demo usernames/passwords across a
 ```
 
 ## Note
-This is a college project built for learning RBAC and audit-logging concepts. Demo data and credentials are intentionally public for reviewers — do not reuse this password pattern in any real system.
+This is a project built for learning RBAC and audit-logging concepts. Demo data and credentials are intentionally public for reviewers — do not reuse this password pattern in any real system.
